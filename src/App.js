@@ -77,6 +77,7 @@ const TablePage = React.lazy(() => import('pages/template/TablePage'));
 const TypographyPage = React.lazy(() => import('pages/template/TypographyPage'));
 const WidgetPage = React.lazy(() => import('pages/template/WidgetPage'));
 
+const LogBookPage = React.lazy(() => import('pages/LogBook.js'))
 const ReminderPage = React.lazy(() => import('pages/ReminderPage.js'));
 const NewPage = React.lazy(() => import('pages/NewPage.js'));
 const EmptyPage = React.lazy(() => import('pages/EmptyPage'));
@@ -116,9 +117,11 @@ class App extends React.Component {
                 <Route exact path="/kemasan" component={PackagePage} />
                 <Route exact path="/strength" component={StrengthPage} />
 
-           
-
-                <Route exact path="/klasifikasi-bpom" component={KlasifikasiBPOMPage} />
+                <Route
+                  exact
+                  path="/klasifikasi-bpom"
+                  component={KlasifikasiBPOMPage}
+                />
                 <Route exact path="/ekspedisi" component={EkspedisiPage} />
                 <Route exact path="/unit" component={UnitPage} />
                 <Route exact path="/login-modal" component={AuthModalPage} />
@@ -130,49 +133,92 @@ class App extends React.Component {
                 <Route exact path="/tables" component={TablePage} />
                 <Route exact path="/badges" component={BadgePage} />
 
-                <Route exact path="/shift-outlet" component={ShiftPage}/>
+                <Route exact path="/shift-outlet" component={ShiftPage} />
                 <Route exact path="/jenis-outlet" component={JenisOutletPage} />
                 <Route exact path="/group-pemilik-lokasi" component={GPLPage} />
                 <Route exact path="/jenis-area" component={JenisAreaPage} />
 
-                
                 <Route exact path="/outlet" component={OutletPage} />
-                <Route exact path="/outletschedule" component={OutletSchedulePage} />
-                <Route exact path="/outletdatacamera" component={OutletDataCameraPage} />
-                <Route exact path="/outletdataapotik" component={OutletDataApotikPage} />
-                <Route exact path="/outletbusdev" component={OutletBusdevPage} />
-                <Route exact path="/outletaccountingpajak" component={OutletAccPajakPage} />
-                <Route exact path="/outletaccountingsupplier" component={OutletAccSupplierPage} />
-                <Route exact path="/outletfinance" component={OutletFInancePage} />
-                <Route exact path="/programdiscount/purchasing" component={ProgramDiscountPage} />
+                <Route
+                  exact
+                  path="/outletschedule"
+                  component={OutletSchedulePage}
+                />
+                <Route
+                  exact
+                  path="/outletdatacamera"
+                  component={OutletDataCameraPage}
+                />
+                <Route
+                  exact
+                  path="/outletdataapotik"
+                  component={OutletDataApotikPage}
+                />
+                <Route
+                  exact
+                  path="/outletbusdev"
+                  component={OutletBusdevPage}
+                />
+                <Route
+                  exact
+                  path="/outletaccountingpajak"
+                  component={OutletAccPajakPage}
+                />
+                <Route
+                  exact
+                  path="/outletaccountingsupplier"
+                  component={OutletAccSupplierPage}
+                />
+                <Route
+                  exact
+                  path="/outletfinance"
+                  component={OutletFInancePage}
+                />
+                <Route
+                  exact
+                  path="/programdiscount/purchasing"
+                  component={ProgramDiscountPage}
+                />
 
-                <Route exact path="/programdiscount/am" component={DiscountAMPageMain} />
-                <Route exact path="/programdiscount/am/add" component={DiscountAMPageAdd} />
-                <Route exact path="/programdiscount/am/view" component={DiscountAMPageView} />
-                
-                <Route exact path="/programdiscount/approval" component={DiscountAMApprovalPage} />
- 
-                
-                
+                <Route
+                  exact
+                  path="/programdiscount/am"
+                  component={DiscountAMPageMain}
+                />
+                <Route
+                  exact
+                  path="/programdiscount/am/add"
+                  component={DiscountAMPageAdd}
+                />
+                <Route
+                  exact
+                  path="/programdiscount/am/view"
+                  component={DiscountAMPageView}
+                />
 
+                <Route
+                  exact
+                  path="/programdiscount/approval"
+                  component={DiscountAMApprovalPage}
+                />
 
-                
                 <Route
                   exact
                   path="/button-groups"
                   component={ButtonGroupPage}
                 />
-  
+
                 <Route exact path="/dropdowns" component={DropdownPage} />
                 <Route exact path="/progress" component={ProgressPage} />
                 <Route exact path="/modals" component={ModalPage} />
                 <Route exact path="/forms" component={FormPage} />
                 <Route exact path="/input-groups" component={InputGroupPage} />
                 <Route exact path="/charts" component={ChartPage} />
-                
-                <Route exact path ='/batch' component={MonitoringBatchPage}/>
-                <Route exact path ="/reminder" component={ReminderPage}/>
-                <Route exact path ="/new" component={NewPage} />
+
+                <Route exact path="/logbook" component={LogBookPage} />
+                <Route exact path="/batch" component={MonitoringBatchPage} />
+                <Route exact path="/reminder" component={ReminderPage} />
+                <Route exact path="/new" component={NewPage} />
                 <Route exact path="/empty" component={EmptyPage} />
                 <Route exact path="/user" component={UserPage} />
               </React.Suspense>
