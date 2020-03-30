@@ -25,32 +25,67 @@ import { NOTIFICATION_SYSTEM_STYLE } from 'utils/constants';
 import User from './UserPage';
 import register from './../registerServiceWorker';
 
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
+  const initialState = {
+    DISTAddError: '',
+    CABDistAddError: '',
+    ScanAddError: '',
+    ScanEmptyError: '',
+  };
 
 class LogBook extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       distUsers: [],
-      cmbUsers: [],
+      cabUsers: [],
       koliOpt: [],
       logDate: [],
       searchRes: [],
       noPLUsers: [],
+      tablePL: [],
+      getTableData: [],
+      tableData: [],
+      filterDist: '',
+      filterCabDist: '',
+      filterNoPL: '',
 
-      //ScanNomorKoli
-      inputNoKoli: '',
+      dir_distributor: '',
+      dir_kddistributor: '',
+
+      dir_kode: '',
+      THP_TglPL: '',
 
       //ScanNomorPL
       inputNoPL: '',
 
       //BeratReal
-      BeratRealPL: 0,
+      beratrealpl: 0,
 
       //InputSearch
       inputSearch: '',
 
-      //noPL
+      //ErrorAdd
+            ScanEmptyError: "",
+            DISTAddError: "",
+            CABDistAddError: "",
+            ScanAddError: "",
+            
+            initialState,
 
       modalDetailPLIsOpen: false,
       modalBeratTimbang: false,
@@ -59,11 +94,7 @@ class LogBook extends React.Component {
 
   // Fungsi yang dipanggil ketika Page load pertama kali
   componentDidMount() {
-    this.pilihDist();
-    this.pilihCMBDist();
-    this.jenisKoli();
-    this.dateLog();
-    this.searchLog();
+    this.getTablePL();
   }
 
   // Untuk memunculkan Notification dengan pesan {currMessage}
@@ -80,8 +111,8 @@ class LogBook extends React.Component {
     }, 100);
   };
 
-  pilihDist = () => {
-    var url = '';
+  pilihDist = async () => {
+    var url = 'http://10.0.111.94:3254/getData?typeGet=GetPLLB';
     Axios.get(url).then(response => {
       if (response.data.data) {
         this.setState({
@@ -91,43 +122,48 @@ class LogBook extends React.Component {
     });
   };
 
-  pilihCMBDist = () => {
-    var url = '';
+  pilihCMBDist = async () => {
+    var url = 'http://10.0.111.94:3254/getData?typeGet=GetPLLB';
     Axios.get(url).then(response => {
       if (response.data.data) {
         this.setState({
-          cmbUsers: response.data.data,
+          cabUsers: response.data.data,
         });
       }
     });
   };
 
-  jenisKoli = () => {
-    var url = '';
-    Axios.get(url).then(response => {
-      if (response.data.data) {
-        this.setState({
-          koliOpt: response.data.data,
-        });
-      }
+  onInputBeratTimbangAddButtonClick = () => {
+    this.setState({
+      modalBeratTimbang: false,
     });
-  };
+    this.getTableData();
+  }
 
-  nomorPL = () => {
-    var url = 'http://10.0.111.94:1234/updateData?typePut=PutUpdateData';
-    var body = {
-      Bri_NoPL: this.state.inputNoPL,
-      THP_BeratTotalReal: parseInt(this.state.BeratRealPL),
-    };
+  nomorPL = async () => {
+    var url = 'http://10.0.111.94:3254/updateData?typePut=PutUpdateData';
+    var body = this.state.getTableData;
+
     Axios.put(url, body).then(response => {
       if (response.data.data) {
-        console.log(JSON.stringify(response.data.data));
-        this.setState({
-          modalBeratTimbang: false,
-          noPLUsers: response.data.data,
-        });
+        // console.log(JSON.stringify(response.data.data));
+        // var data = response.data.data;
+        // var tempTableData = this.state.tableData;
+        // tempTableData.push(data);
+        // console.log('TempTableData:', JSON.stringify(tempTableData));
+        // this.setState({
+        //   tableData: tempTableData,
+
+        //   filterDist: this.state.dir_distributor,
+        //   filterCabDist: this.state.dir_kode,
+        //   filterNoPL: this.state.inputNoPL,
+        // });
+        this.showNotification('Save data sukses');
       }
     });
+
+   
+
   };
 
   dateLog = () => {
@@ -152,38 +188,6 @@ class LogBook extends React.Component {
     });
   };
 
-  scanNomorKoli = () => {
-    var url = '';
-    var body = {
-      noKoli: this.state.inputNoKoli,
-    };
-
-    Axios.post(url, body)
-      .then(() => {
-        this.scanNomorKoli();
-        console.log('Masuk No Koli');
-      })
-      .catch(error => {
-        console.log('ErrorMsg: ' + error.message);
-      });
-  };
-
-  scanNomorPL = () => {
-    var url = '';
-    var body = {
-      noPL: this.state.inputNoPL,
-    };
-
-    Axios.post(url, body)
-      .then(() => {
-        this.scanNomorPL();
-        console.log('Masuk No PL');
-      })
-      .catch(error => {
-        console.log('ErrorMsg: ' + error.message);
-      });
-  };
-
   search = () => {
     var url = '';
     var body = {
@@ -200,28 +204,105 @@ class LogBook extends React.Component {
       });
   };
 
-  onScanKoliInputTextChange = (inputName, event) => {
+  getTableData = async () => {
+    var url =
+      'http://10.0.111.94:3254/getData?typeGet=GetByNoPL&NoPL=' +
+      this.state.inputNoPL;
+      
+    const isValid = this.validateAdd();
+    if (!isValid) {
+      return;
+    }
+
+    console.log(this.state);
+
+    this.setState(initialState);
+
+    Axios.get(url)
+      .then(response => {
+        if(response.data.data) {
+          var data = response.data.data;
+          data.thp_berattotalreal = parseInt(this.state.beratrealpl + '');
+
+          var tempTableData = this.state.getTableData;
+          tempTableData.push(data);
+          this.setState({
+            getTableData: tempTableData, 
+          });
+        }
+      })  
+        .catch(error => console.log('ERROR: ', error))
+    
+  }
+
+  getTablePL = async () => {
+    var url = 'http://10.0.111.94:3254/getData?typeGet=GetPLLB';
+    
+    Axios.get(url)
+      .then(response => {
+        if (response.data.data) {
+          this.setState({
+            tablePL: response.data.data,
+          });
+        }
+      })
+      .catch(error => console.log('ERROR: ', error));
+  };
+
+  onDISTInputChange = event => {
     const value = event.target.value;
 
-    this.setState({
-      ['inputNoKoli' + inputName]: value,
-    });
+
+    this.setState(
+      {
+        dir_distributor: value,
+      },
+      () => console.log(this.state.dir_distributor),
+    );
+  };
+
+  onCABDISTInputChange = event => {
+    const value = event.target.value;
+
+    this.setState(
+      {
+        dir_kode: value,
+      },
+      () => console.log(this.state.dir_kode),
+    );
+  };
+
+  onDateInputChange = event => {
+    const value = event.target.value;
+
+    this.setState(
+      {
+        THP_TglPL: value,
+      },
+      () => console.log(this.state.THP_TglPL),
+    );
   };
 
   onScanPLInputTextChange = event => {
     const value = event.target.value;
 
-    this.setState({
-      inputNoPL: value,
-    });
+    this.setState(
+      {
+        inputNoPL: value,
+      },
+      () => console.log(this.state.inputNoPL),
+    );
   };
 
   onBeratRealPLInputTextChange = event => {
     const value = event.target.value;
 
-    this.setState({
-      BeratRealPL: value,
-    });
+    this.setState(
+      {
+        beratrealpl: value,
+      },
+      () => console.log(this.state.beratrealpl),
+    );
   };
 
   onScanPLInputEnterPressed = event => {
@@ -233,13 +314,17 @@ class LogBook extends React.Component {
     }
   };
 
-  onSearchInputTextChange = (inputName, event) => {
+  onSearchInputTextChange = event => {
     const value = event.target.value;
 
     this.setState({
-      ['inputSearch' + inputName]: value,
+      inputSearch : value,
     });
   };
+
+  onSaveClick = () => {
+    this.nomorPL()
+  }
 
   toggleDetailPLModal = () => {
     this.setState({
@@ -253,8 +338,49 @@ class LogBook extends React.Component {
     });
   };
 
+  validateAdd = () => {
+    let ScanAddError = '';
+    let  CABDistAddError = '';
+    let  DISTAddError = '';
+    let ScanEmptyError = '';
+  
+  
+      
+      if (!this.state.dir_distributor) {
+        DISTAddError = 'DIST must be fill';
+      }
+
+      if (!this.state.dir_kode) {
+        CABDistAddError = 'CAB Dist must be fill';
+      }
+
+      if (this.state.inputNoPL.length !== 12) {
+          ScanAddError = 'Invalid Nomor PL';
+      }
+
+
+      if (
+        DISTAddError.length > 0 ||
+        ScanEmptyError.length > 0 ||
+        CABDistAddError.length > 0
+      ) {
+        this.setState({
+          ScanAddError,
+          CABDistAddError,
+          ScanEmptyError,
+          DISTAddError,
+        });
+        return false;
+      }
+
+      return true;
+    }
+
+
   //render biasa nya di-isi untuk desain HTML
+
   render() {
+    
     return (
       <Page
         title="Program Logbook"
@@ -281,58 +407,48 @@ class LogBook extends React.Component {
                 <tbody>
                   <tr>
                     <td>Pilih DIST:</td>
-
                     <td>
-                      <Input type="select">
-                        <option>Select Your Option</option>
-                        <option>1</option>
+                      <Input
+                        type="select"
+                        value={this.state.dir_distributor}
+                        onInput={event => this.onDISTInputChange(event)}
+                      >
+                        <option value="">Select Your Option</option>
+                        {this.state.tablePL.map(tablePL => (
+                          <option value={tablePL.dir_distributor}>
+                            {tablePL.dir_distributor} -{' '}
+                            {tablePL.dir_kddistributor}
+                          </option>
+                        ))}
                       </Input>
+                      <div style={{ color: 'red' }}>
+                        {this.state.DISTAddError}
+                      </div>
                     </td>
                   </tr>
 
                   <tr>
                     <td>Pilih CAB DIST:</td>
                     <td>
-                      <Input type="select">
-                        <option>Select Your Option For CMB DIST</option>
-                        <option>1</option>
+                      <Input
+                        type="select"
+                        value={this.state.dir_kode}
+                        onInput={event => this.onCABDISTInputChange(event)}
+                      >
+                        <option value="">
+                          Select Your Option For CAB DIST
+                        </option>
+                        {this.state.tablePL.map(tablePL => (
+                          <option value={tablePL.dir_kode}>
+                            {tablePL.dir_kode} - {tablePL.dir_nama}
+                          </option>
+                        ))}
                       </Input>
+                      <div style={{ color: 'red' }}>
+                        {this.state.CABDistAddError}
+                      </div>
                     </td>
                   </tr>
-                  {/*<tr>
-										<td>Jenis Koli:</td>
-										<td>
-											<Input type="select">
-												<option>
-													Select Your Option
-												</option>
-												<option>1</option>
-											</Input>
-										</td>
-									</tr>
-
-									<tr>
-										<td>Scan Nomor Koli:</td>
-										<td>
-											<Input
-												placeholder="Nomor Koli"
-												value={this.state.scanNomorKoli}
-												onInput={event =>
-													this.onScanKoliInputTextChange(
-														"scanNomorKoli",
-														event
-													)
-												}
-											></Input>
-										</td>
-										<td>
-											<Button color="primary">
-												Change Koli
-											</Button>
-										</td>
-									</tr>
-                                            */}
-
                   <tr>
                     <td>Scan Nomor PL:</td>
                     <td>
@@ -344,6 +460,9 @@ class LogBook extends React.Component {
                           this.onScanPLInputEnterPressed(event)
                         }
                       ></Input>
+                      <div style={{ color: 'red' }}>
+                        {this.state.ScanAddError}
+                      </div>
                     </td>
                     <td>
                       <Button
@@ -358,8 +477,25 @@ class LogBook extends React.Component {
                   <tr>
                     <td>Tanggal:</td>
                     <td>
-                      <Input type="select">
-                        <option>16 - 03 - 2020</option>
+                      <Input
+                        type="select"
+                        value={this.state.thp_nopl}
+                        onInput={event => this.onDateInputChange(event)}
+                      >
+                        <option>Select Your Date</option>
+                        {this.state.tablePL.map(tablePL => (
+                          <option value={tablePL.thp_tglpl}>
+                            {tablePL.thp_tglpl.substr(8, 2) +
+                              '-' +
+                              MONTHS[
+                                new Date(
+                                  tablePL.thp_tglpl.substr(0, 10),
+                                ).getMonth()
+                              ] +
+                              '-' +
+                              tablePL.thp_tglpl.substr(0, 4)}
+                          </option>
+                        ))}
                       </Input>
                     </td>
                     <td></td>
@@ -371,13 +507,16 @@ class LogBook extends React.Component {
                       <Label className="ml-4">Search</Label>
                     </td>
                     <td>
-                      <Input type="select">Search Here</Input>
+                      <Input type="select">
+                        <option>Search Here</option>
+                        <option>Nomor Logbook</option>
+                        <option>Nomor DO</option>
+                        <option>Nomor PL</option>
+                      </Input>
                       <Input
                         className="mt-3"
-                        value={this.state.searchRes}
-                        onInput={event =>
-                          this.onSearchInputTextChange('searchRes')
-                        }
+                        value={this.state.inputSearch}
+                        onInput={event => this.onSearchInputTextChange(event)}
                       />
                     </td>
                   </tr>
@@ -400,50 +539,56 @@ class LogBook extends React.Component {
                   </tr>
                 </thead>
                 <tbody>
-                  {
-                    <tr>
-                      <td>{this.state.noPLUsers.Bri_NoPL}</td>
-                      <td>{this.state.noPLUsers.THP_BeratTotalReal}</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td align="center">{0}</td>
-                      <td></td>
-                      <td align="center">
-                        <Button
-                          size="sm"
-                          color="warning"
-                          style={{
-                            marginRight: '1%',
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="danger"
-                          style={{ marginLeft: '1%' }}
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  }
-                  {
-                    // this.state.noPLUsers.map((user, index)=>
-                    //     <tr>
-                    //         <td>{index + 1}</td>
-                    //         <td>{user.Bri_NoPL}</td>
-                    //         <td>{user.BeratRealPL}</td>
-                    //         <td align='center'>
-                    //             <Button size= 'sm' color= 'warning' style={{ marginRight:'1%' }}>Edit</Button>
-                    //             <Button size= 'sm' color= 'danger'style={{ marginLeft:'1%' }}>Delete</Button>
-                    //             </td>
-                    //     </tr>
-                    // )
-                  }
+                  {this.state.getTableData.map(
+                    getTableData => (
+                      //  getTableData.thp_distname.includes(this.state.filterDist) &&
+                      //   getTableData.dir_kode.includes(this.state.filterCabDist) &&
+                      //   getTableData.thp_nopl.includes(this.state.filterNoPL) && (
+                      <tr>
+                        <td>{getTableData.thp_nopl}</td>
+                        <td>
+                          {getTableData.thp_tglpl.substr(8, 2) +
+                            '-' +
+                            MONTHS[
+                              new Date(
+                                getTableData.thp_tglpl.substr(0, 10),
+                              ).getMonth()
+                            ] +
+                            '-' +
+                            getTableData.thp_tglpl.substr(0, 4)}
+                        </td>
+                        <td>{getTableData.tdpd_nodo}</td>
+                        <td>{getTableData.dir_kode}</td>
+                        <td>{getTableData.thp_tujuanid}</td>
+                        <td>{getTableData.thp_pemesanid}</td>
+                        <td>{getTableData.thp_distname}</td>
+                        <td>{getTableData.thp_berattotalreal}</td>
+                        <td>{}</td>
+
+                        <td align="center">
+                          <Button
+                            size="sm"
+                            color="warning"
+                            style={{
+                              marginBottom: '1%',
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            color="danger"
+                            style={{
+                              marginTop: '1%',
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ),
+                    // ),
+                  )}
                 </tbody>
               </Table>
             </Form>
@@ -451,7 +596,11 @@ class LogBook extends React.Component {
 
           <CardFooter className="d-flex justify-content-center">
             <Button color="primary">Add</Button>
-            <Button className="ml-5" color="primary">
+            <Button
+              className="ml-5"
+              color="primary"
+              onClick={() => this.onSaveClick()}
+            >
               Save
             </Button>
             <Button className="ml-5" color="secondary">
@@ -466,7 +615,7 @@ class LogBook extends React.Component {
           </CardFooter>
         </Card>
         {/*Modal Detail PL*/}
-        <Modal centered isOpen={this.state.modalDetailPLIsOpen} size="lg">
+        <Modal centered isOpen={this.state.modalDetailPLIsOpen} size="lg  ">
           <ModalHeader>
             <h3>Input Berat Real</h3>
           </ModalHeader>
@@ -559,12 +708,12 @@ class LogBook extends React.Component {
             <Form>
               <Input
                 placeholder="Berat Timbang"
-                value={this.state.BeratRealPL}
+                value={this.state.beratrealpl}
                 onInput={event => this.onBeratRealPLInputTextChange(event)}
               ></Input>
               <Button
                 color="success"
-                onClick={() => this.nomorPL()}
+                onClick={() => this.onInputBeratTimbangAddButtonClick()}
                 className="mt-2 mr-2"
               >
                 Add
