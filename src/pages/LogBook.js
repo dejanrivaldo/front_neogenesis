@@ -76,16 +76,19 @@ class LogBook extends React.Component {
       //BeratReal
       beratrealpl: 0,
 
+      //DeleteTable
+      deleteTable: true,
+
       //InputSearch
       inputSearch: '',
 
       //ErrorAdd
-            ScanEmptyError: "",
-            DISTAddError: "",
-            CABDistAddError: "",
-            ScanAddError: "",
-            
-            initialState,
+      ScanEmptyError: '',
+      DISTAddError: '',
+      CABDistAddError: '',
+      ScanAddError: '',
+
+      initialState,
 
       modalDetailPLIsOpen: false,
       modalBeratTimbang: false,
@@ -138,7 +141,7 @@ class LogBook extends React.Component {
       modalBeratTimbang: false,
     });
     this.getTableData();
-  }
+  };
 
   nomorPL = async () => {
     var url = 'http://10.0.111.94:3254/updateData?typePut=PutUpdateData';
@@ -161,9 +164,6 @@ class LogBook extends React.Component {
         this.showNotification('Save data sukses');
       }
     });
-
-   
-
   };
 
   dateLog = () => {
@@ -208,7 +208,7 @@ class LogBook extends React.Component {
     var url =
       'http://10.0.111.94:3254/getData?typeGet=GetByNoPL&NoPL=' +
       this.state.inputNoPL;
-      
+
     const isValid = this.validateAdd();
     if (!isValid) {
       return;
@@ -220,24 +220,23 @@ class LogBook extends React.Component {
 
     Axios.get(url)
       .then(response => {
-        if(response.data.data) {
+        if (response.data.data) {
           var data = response.data.data;
           data.thp_berattotalreal = parseInt(this.state.beratrealpl + '');
 
           var tempTableData = this.state.getTableData;
           tempTableData.push(data);
           this.setState({
-            getTableData: tempTableData, 
+            getTableData: tempTableData,
           });
         }
-      })  
-        .catch(error => console.log('ERROR: ', error))
-    
-  }
+      })
+      .catch(error => console.log('ERROR: ', error));
+  };
 
   getTablePL = async () => {
     var url = 'http://10.0.111.94:3254/getData?typeGet=GetPLLB';
-    
+
     Axios.get(url)
       .then(response => {
         if (response.data.data) {
@@ -251,7 +250,6 @@ class LogBook extends React.Component {
 
   onDISTInputChange = event => {
     const value = event.target.value;
-
 
     this.setState(
       {
@@ -318,13 +316,13 @@ class LogBook extends React.Component {
     const value = event.target.value;
 
     this.setState({
-      inputSearch : value,
+      inputSearch: value,
     });
   };
 
   onSaveClick = () => {
-    this.nomorPL()
-  }
+    this.nomorPL();
+  };
 
   toggleDetailPLModal = () => {
     this.setState({
@@ -340,47 +338,47 @@ class LogBook extends React.Component {
 
   validateAdd = () => {
     let ScanAddError = '';
-    let  CABDistAddError = '';
-    let  DISTAddError = '';
+    let CABDistAddError = '';
+    let DISTAddError = '';
     let ScanEmptyError = '';
-  
-  
-      
-      if (!this.state.dir_distributor) {
-        DISTAddError = 'DIST must be fill';
-      }
 
-      if (!this.state.dir_kode) {
-        CABDistAddError = 'CAB Dist must be fill';
-      }
-
-      if (this.state.inputNoPL.length !== 12) {
-          ScanAddError = 'Invalid Nomor PL';
-      }
-
-
-      if (
-        DISTAddError.length > 0 ||
-        ScanEmptyError.length > 0 ||
-        CABDistAddError.length > 0
-      ) {
-        this.setState({
-          ScanAddError,
-          CABDistAddError,
-          ScanEmptyError,
-          DISTAddError,
-        });
-        return false;
-      }
-
-      return true;
+    if (!this.state.dir_distributor) {
+      DISTAddError = 'DIST must be fill';
     }
 
+    if (!this.state.dir_kode) {
+      CABDistAddError = 'CAB Dist must be fill';
+    }
 
+    if (this.state.inputNoPL.length !== 12) {
+      ScanAddError = 'Invalid Nomor PL';
+    }
+
+    if (
+      DISTAddError.length > 0 ||
+      ScanEmptyError.length > 0 ||
+      CABDistAddError.length > 0
+    ) {
+      this.setState({
+        ScanAddError,
+        CABDistAddError,
+        ScanEmptyError,
+        DISTAddError,
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  deleteOperation = (getTableDataIndex) => {
+    const deleteTable = this.state.getTableData;
+    deleteTable.splice(getTableDataIndex, 1); 
+    this.setState({getTableData: deleteTable});
+  }
   //render biasa nya di-isi untuk desain HTML
 
   render() {
-    
     return (
       <Page
         title="Program Logbook"
@@ -453,6 +451,8 @@ class LogBook extends React.Component {
                     <td>Scan Nomor PL:</td>
                     <td>
                       <Input
+                        class="nomorPL"    
+                        type="text"
                         placeholder="Nomor PL"
                         value={this.state.inputNoPL}
                         onInput={event => this.onScanPLInputTextChange(event)}
@@ -540,10 +540,10 @@ class LogBook extends React.Component {
                 </thead>
                 <tbody>
                   {this.state.getTableData.map(
-                    getTableData => (
+                    (getTableData, Index) => (
                       //  getTableData.thp_distname.includes(this.state.filterDist) &&
                       //   getTableData.dir_kode.includes(this.state.filterCabDist) &&
-                      //   getTableData.thp_nopl.includes(this.state.filterNoPL) && (
+                      //   getTableData.thp_nopl.includes(this.state.filterNoPL) &&
                       <tr>
                         <td>{getTableData.thp_nopl}</td>
                         <td>
@@ -570,7 +570,7 @@ class LogBook extends React.Component {
                             size="sm"
                             color="warning"
                             style={{
-                              marginBottom: '1%',
+                              marginRight: '1%',
                             }}
                           >
                             Edit
@@ -579,8 +579,11 @@ class LogBook extends React.Component {
                             size="sm"
                             color="danger"
                             style={{
-                              marginTop: '1%',
+                              marginLeft: '1%',
                             }}
+                            onClick={() =>
+                              this.deleteOperation(Index)
+                            }
                           >
                             Delete
                           </Button>
