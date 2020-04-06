@@ -70,6 +70,14 @@ class LogBook extends React.Component {
       dir_kode: '',
       THP_TglPL: '',
 
+      //Table Modal Search
+      tableSearchLogbook: [],
+      tableSearchDO: [],
+      tableSearchPL: [],
+
+      //SearchLogbook
+      inputNoLogbook: 'Nomor Logbook',
+
       //ScanNomorPL
       inputNoPL: '',
 
@@ -92,6 +100,9 @@ class LogBook extends React.Component {
 
       modalDetailPLIsOpen: false,
       modalBeratTimbang: false,
+      modalSearchLogbook: false,
+      modalSearchDO: false,
+      modalSearchPL: false,
     };
   }
 
@@ -134,13 +145,6 @@ class LogBook extends React.Component {
         });
       }
     });
-  };
-
-  onInputBeratTimbangAddButtonClick = () => {
-    this.setState({
-      modalBeratTimbang: false,
-    });
-    this.getTableData();
   };
 
   nomorPL = async () => {
@@ -186,22 +190,6 @@ class LogBook extends React.Component {
         });
       }
     });
-  };
-
-  search = () => {
-    var url = '';
-    var body = {
-      search: this.state.inputSearch,
-    };
-
-    Axios.post(url, body)
-      .then(() => {
-        this.search();
-        console.log('Masuk');
-      })
-      .catch(error => {
-        console.log('ErrorMsg: ' + error.message);
-      });
   };
 
   getTableData = async () => {
@@ -303,6 +291,13 @@ class LogBook extends React.Component {
     );
   };
 
+  onInputBeratTimbangAddButtonClick = () => {
+    this.setState({
+      modalBeratTimbang: false,
+    });
+    this.getTableData();
+  };
+
   onScanPLInputEnterPressed = event => {
     var code = event.keyCode || event.which;
     if (code === 13) {
@@ -315,9 +310,26 @@ class LogBook extends React.Component {
   onSearchInputTextChange = event => {
     const value = event.target.value;
 
-    this.setState({
-      inputSearch: value,
-    });
+    this.setState(
+      {
+        inputSearch: value,
+      },
+      () => console.log(this.state.inputSearch),
+    );
+  };
+
+  onSearchInputPressed = event => {
+    var code = event.keyCode || event.which;
+    if (code === 13) {
+      event.preventDefault();
+      //Function To Do
+      this.toggleSearchLogbookModal();
+      this.toggleSearchDOModal();
+      this.toggleSearchPLModal();
+      this.searchByLogbook();
+      this.searchByDO();
+      this.searchByPL();
+    }
   };
 
   onSaveClick = () => {
@@ -333,6 +345,24 @@ class LogBook extends React.Component {
   toggleBeratTambangModal = () => {
     this.setState({
       modalBeratTimbang: !this.state.modalBeratTimbang,
+    });
+  };
+
+  toggleSearchLogbookModal = () => {
+    this.setState({
+      modalSearchLogbook: !this.state.modalSearchLogbook,
+    });
+  };
+
+  toggleSearchDOModal = () => {
+    this.setState({
+      modalSearchDO: !this.state.modalSearchDO,
+    });
+  };
+
+  toggleSearchPLModal = () => {
+    this.setState({
+      modalSearchPL: !this.state.modalSearchPL,
     });
   };
 
@@ -371,11 +401,88 @@ class LogBook extends React.Component {
     return true;
   };
 
-  deleteOperation = (getTableDataIndex) => {
+  deleteOperation = getTableDataIndex => {
     const deleteTable = this.state.getTableData;
-    deleteTable.splice(getTableDataIndex, 1); 
-    this.setState({getTableData: deleteTable});
-  }
+    deleteTable.splice(getTableDataIndex, 1);
+    this.setState({ getTableData: deleteTable });
+  };
+
+  searchByLogbook =  () => {
+    var url =
+      'http://10.0.111.94:3254/getData?typeGet=GetByLogID&LogID=' +
+      this.state.inputSearch;
+
+    Axios.get(url)
+      .then(response => {
+        if (response.data.data) {
+          var data = response.data.data;
+          var tempTableLogbook = [];
+          tempTableLogbook.push(data);
+
+          console.log(JSON.stringify(tempTableLogbook));
+
+          this.setState(
+            {
+              tableSearchLogbook: tempTableLogbook,
+            },
+            () => console.log(this.state.tableSearchLogbook),
+          );
+        }
+      })
+      .catch(error => console.log('ERROR: ', error));
+  };
+
+  searchByDO =  () => {
+    var url =
+      'http://10.0.111.94:3254/getData?typeGet=GetByDONum&Log_DONum=' +
+      this.state.inputSearch;
+
+    Axios.get(url)
+      .then(response => {
+        if (response.data.data) {
+          var data = response.data.data;
+          var tempTableDO = [];
+          tempTableDO.push(data);
+
+          console.log(JSON.stringify(tempTableDO));
+
+          this.setState(
+            {
+              tableSearchDO: tempTableDO,
+            },
+            () => console.log(this.state.tempTableDO),
+          );
+        }
+      })
+      .catch(error => console.log('ERROR: ', error));
+  };
+
+  searchByPL =  () => {
+    var url =
+      'http://10.0.111.94:3254/getData?typeGet=GetByPLNum&Log_PLNum=' +
+      this.state.inputSearch;
+
+    Axios.get(url)
+      .then(response => {
+        if (response.data.data) {
+          var data = response.data.data;
+          var tempTablePL = [];
+          tempTablePL.push(data);
+
+          console.log(JSON.stringify(tempTablePL));
+
+          this.setState(
+            {
+              tableSearchPL: tempTablePL,
+            },
+            () => console.log(this.state.tempTablePL),
+          );
+        }
+      })
+      .catch(error => console.log('ERROR: ', error));
+  };
+
+
   //render biasa nya di-isi untuk desain HTML
 
   render() {
@@ -451,7 +558,7 @@ class LogBook extends React.Component {
                     <td>Scan Nomor PL:</td>
                     <td>
                       <Input
-                        class="nomorPL"    
+                        class="nomorPL"
                         type="text"
                         placeholder="Nomor PL"
                         value={this.state.inputNoPL}
@@ -509,7 +616,7 @@ class LogBook extends React.Component {
                     <td>
                       <Input type="select">
                         <option>Search Here</option>
-                        <option>Nomor Logbook</option>
+                        <option>{this.state.inputNoLogbook}</option>
                         <option>Nomor DO</option>
                         <option>Nomor PL</option>
                       </Input>
@@ -517,6 +624,7 @@ class LogBook extends React.Component {
                         className="mt-3"
                         value={this.state.inputSearch}
                         onInput={event => this.onSearchInputTextChange(event)}
+                        onKeyPress={event => this.onSearchInputPressed(event)}
                       />
                     </td>
                   </tr>
@@ -581,9 +689,7 @@ class LogBook extends React.Component {
                             style={{
                               marginLeft: '1%',
                             }}
-                            onClick={() =>
-                              this.deleteOperation(Index)
-                            }
+                            onClick={() => this.deleteOperation(Index)}
                           >
                             Delete
                           </Button>
@@ -728,6 +834,143 @@ class LogBook extends React.Component {
               >
                 Cancel
               </Button>
+            </Form>
+          </ModalBody>
+        </Modal>
+
+        {/*Modal Search by Logbook*/}
+        <Modal centered isOpen={this.state.modalSearchLogbook} size="lg  ">
+          <ModalHeader>
+            <h3>Search by Nomor Logbook</h3>
+          </ModalHeader>
+          <ModalBody className="m-3">
+            <Form>
+              <FormGroup>
+                <Table striped bordered hover variant="dark">
+                  <thead>
+                    <tr>
+                      <th>Nomor Logbook</th>
+                      <th>Tanggal Logbook</th>
+                      <th>Cabang</th>
+                      <th>Berat Koli</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {this.state.tableSearchLogbook.map(tableSearchLogbook => (
+                      <tr>
+                        <td>{tableSearchLogbook.log_id}</td>
+                        <td>
+                          {tableSearchLogbook.log_date.substr(8, 2) +
+                            '-' +
+                            MONTHS[
+                              new Date(
+                                tableSearchLogbook.log_date.substr(0, 10),
+                              ).getMonth()
+                            ] +
+                            '-' +
+                            tableSearchLogbook.log_date.substr(0, 4)}
+                        </td>
+                        <td>{tableSearchLogbook.log_cabams}</td>
+                        <td>{tableSearchLogbook.scan_outberatcoli}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </FormGroup>
+              <ModalFooter>
+                <Button
+                  color="danger"
+                  onClick={() => this.toggleSearchLogbookModal()}
+                >
+                  Close
+                </Button>
+              </ModalFooter>
+            </Form>
+          </ModalBody>
+        </Modal>
+
+        {/*Modal Search by DO*/}
+        <Modal centered isOpen={this.state.modalSearchDO} size="lg  ">
+          <ModalHeader>
+            <h3>Search by Nomor DO</h3>
+          </ModalHeader>
+          <ModalBody className="m-3">
+            <Form>
+              <FormGroup>
+                <Table striped bordered hover variant="dark">
+                  <thead>
+                    <tr>
+                      <th>Nomor DO</th>
+                      <th>Tanggal DO</th>
+                      <th>Cabang</th>
+                      <th>Berat Koli</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {this.state.tableSearchDO.map(tableSearchDO => (
+                      <tr>
+                        <td>{tableSearchDO.log_donum}</td>
+                        <td>
+                          {tableSearchDO.log_date}
+                        </td>
+                        <td>{tableSearchDO.log_cabams}</td>
+                        <td>{tableSearchDO.scan_outberatcoli}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </FormGroup>
+              <ModalFooter>
+                <Button
+                  color="danger"
+                  onClick={() => this.toggleSearchDOModal()}
+                >
+                  Close
+                </Button>
+              </ModalFooter>
+            </Form>
+          </ModalBody>
+        </Modal>
+
+        {/*Modal Search by PL*/}
+        <Modal centered isOpen={this.state.modalSearchPL} size="lg  ">
+          <ModalHeader>
+            <h3>Search by Nomor PL</h3>
+          </ModalHeader>
+          <ModalBody className="m-3">
+            <Form>
+              <FormGroup>
+                <Table striped bordered hover variant="dark">
+                  <thead>
+                    <tr>
+                      <th>Nomor PL</th>
+                      <th>Tanggal PL</th>
+                      <th>Cabang</th>
+                      <th>Berat Koli</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {this.state.tableSearchPL.map(tableSearchPL => (
+                      <tr>
+                        <td>{tableSearchPL.log_plnum}</td>
+                        <td>
+                          {tableSearchPL.log_date}
+                        </td>
+                        <td>{tableSearchPL.log_cabams}</td>
+                        <td>{tableSearchPL.scan_outberatcoli}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </FormGroup>
+              <ModalFooter>
+                <Button
+                  color="danger"
+                  onClick={() => this.toggleSearchPLModal()}
+                >
+                  Close
+                </Button>
+              </ModalFooter>
             </Form>
           </ModalBody>
         </Modal>
