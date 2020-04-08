@@ -45,7 +45,12 @@ const MONTHS = [
     CABDistAddError: '',
     ScanAddError: '',
     ScanEmptyError: '',
+    SearchError: ''
   };
+
+  
+  const baseUrl = 'http://10.0.111.94:3254';
+
 
 class LogBook extends React.Component {
   constructor(props) {
@@ -58,6 +63,8 @@ class LogBook extends React.Component {
       searchRes: [],
       noPLUsers: [],
       tablePL: [],
+      distTable: [],
+      cabDistTable: [],
       getTableData: [],
       tableData: [],
       filterDist: '',
@@ -68,15 +75,18 @@ class LogBook extends React.Component {
       dir_kddistributor: '',
 
       dir_kode: '',
-      THP_TglPL: '',
+      thp_tglpl: '',
+
+      //SearchInput
+      searchHere: 'Search Here',
+      searchLogbook: 'Nomor Logbook',
+      searchDO: 'Nomor DO',
+      searchPL: 'Nomor PL',
 
       //Table Modal Search
       tableSearchLogbook: [],
       tableSearchDO: [],
       tableSearchPL: [],
-
-      //SearchLogbook
-      inputNoLogbook: 'Nomor Logbook',
 
       //ScanNomorPL
       inputNoPL: '',
@@ -84,17 +94,20 @@ class LogBook extends React.Component {
       //BeratReal
       beratrealpl: 0,
 
-      //DeleteTable
+      //Delete
       deleteTable: true,
+      deleteAll: true,
 
       //InputSearch
       inputSearch: '',
+      inputSearchType: '',
 
       //ErrorAdd
       ScanEmptyError: '',
       DISTAddError: '',
       CABDistAddError: '',
       ScanAddError: '',
+      SearchError: '',
 
       initialState,
 
@@ -108,7 +121,7 @@ class LogBook extends React.Component {
 
   // Fungsi yang dipanggil ketika Page load pertama kali
   componentDidMount() {
-    this.getTablePL();
+    this.getDist();
   }
 
   // Untuk memunculkan Notification dengan pesan {currMessage}
@@ -148,7 +161,7 @@ class LogBook extends React.Component {
   };
 
   nomorPL = async () => {
-    var url = 'http://10.0.111.94:3254/updateData?typePut=PutUpdateData';
+    var url = baseUrl + '/updateData?typePut=PutUpdateData';
     var body = this.state.getTableData;
 
     Axios.put(url, body).then(response => {
@@ -165,30 +178,68 @@ class LogBook extends React.Component {
         //   filterCabDist: this.state.dir_kode,
         //   filterNoPL: this.state.inputNoPL,
         // });
-        this.showNotification('Save data sukses');
+        this.processInsertLogbook(response.data.data);
+        this.showNotification('Save Data Sukses');
       }
     });
   };
 
-  dateLog = () => {
-    var url = '';
-    Axios.get(url).then(response => {
-      if (response.data.data) {
-        this.setState({
-          logDate: response.data.data,
-        });
-      }
+  processInsertLogbook = async payload => {
+    var noPLList = '';
+    var noDOList = '';
+    var totBerat = 0;
+    var totProcod = 0;
+
+    payload.map(data => {
+      noPLList = noPLList + data.thp_nopl + ',';
+      noDOList = noDOList + data.bri_nodo + ',';
+      totBerat = totBerat + data.thp_berattotalreal;
     });
+
+    noPLList = noPLList.substr(0, noPLList.length - 1);
+    noDOList = noDOList.substr(0, noDOList.length - 1);
+
+    var cabAms = this.state.cabDistTable[this.state.dir_kode];
+
+      var logbookObj = {
+        log_ID: '',
+        log_Date: new Date(),
+        log_CabAms: cabAms,
+        log_PLNum: noPLList,
+        log_DONum: noDOList,
+        log_OutDest: '981', // Tujuan
+        log_OutName: 'adqw', // Penerima
+        log_TotBerat: totBerat,
+        log_TotProcod: totProcod, // Belum
+        log_LastUpdate: new Date(),
+        log_ActiveYN: 'Y',
+        scan_OutNumber: 30, // Belum
+        scan_OutDate: new Date(),
+        scan_OutCabDist: cabAms,
+        scan_OutBeratKoli: totBerat,
+        scan_OutPLNum: noPLList,
+        scan_OutDONum: noDOList,
+        scan_OutOutletDest: 'asd', // Tujuan
+        scan_OutOutletName: 'pqwoe', // Penerima
+        scan_OutNIP: payload.thp_updateid,
+        scan_OutActiveYN: 'Y',
+        scan_OutLastUpdate: new Date(),
+        scan_InNumber: null,
+        scan_InDate: null,
+        scan_InActiveYN: null,
+        scan_InLastUpdate: null,
+      };
+    
+
+    this.insertLogbook(logbookObj);
   };
 
-  searchLog = () => {
-    var url = '';
-    Axios.get(url).then(response => {
-      if (response.data.data) {
-        this.setState({
-          searchRes: response.data.data,
-        });
-      }
+  insertLogbook = async payload => {
+    var url = 'http://10.0.111.94:3254/insertData?typePost=FirebaseLB';
+    var body = payload;
+
+    Axios.post(url, body).then(response => {
+      this.showNotification('Post Logbook Sukses');
     });
   };
 
@@ -222,8 +273,42 @@ class LogBook extends React.Component {
       .catch(error => console.log('ERROR: ', error));
   };
 
-  getTablePL = async () => {
-    var url = 'http://10.0.111.94:3254/getData?typeGet=GetPLLB';
+  getDist = async () => {
+    var url = 'http://10.0.111.94:3254//getData?typeGet=GetDistSql';
+
+    Axios.get(url)
+      .then(response => {
+        if (response.data.data) {
+          console.log(JSON.stringify(response.data.data));
+          this.setState({
+            distTable: response.data.data,
+          });
+        }
+      })
+      .catch(error => console.log('ERROR: ', error));
+  };
+
+  getCabDist = async dir_distributor => {
+    var url =
+      'http://10.0.111.94:3254//getData?typeGet=GetCabDistributorSql&Dir_Distributor=' +
+      dir_distributor;
+
+    Axios.get(url)
+      .then(response => {
+        if (response.data.data) {
+          console.log(JSON.stringify(response.data.data));
+          this.setState({
+            cabDistTable: response.data.data,
+          });
+        }
+      })
+      .catch(error => console.log('ERROR: ', error));
+  };
+
+  getTablePL = async dir_kode => {
+    var url =
+      'http://10.0.111.94:3254/getData?typeGet=GetPLLB&dist=' +
+      dir_kode;
 
     Axios.get(url)
       .then(response => {
@@ -239,16 +324,26 @@ class LogBook extends React.Component {
   onDISTInputChange = event => {
     const value = event.target.value;
 
+    if (value.length > 0) {
+      this.getCabDist(value);
+    }
+
     this.setState(
       {
         dir_distributor: value,
       },
-      () => console.log(this.state.dir_distributor),
+      () => {
+        console.log(this.state.dir_distributor);
+      },
     );
   };
 
   onCABDISTInputChange = event => {
     const value = event.target.value;
+
+    if (value.length > 0) {
+      this.getTablePL(this.state.cabDistTable[value]);
+    }
 
     this.setState(
       {
@@ -263,9 +358,9 @@ class LogBook extends React.Component {
 
     this.setState(
       {
-        THP_TglPL: value,
+        thp_tglpl: value,
       },
-      () => console.log(this.state.THP_TglPL),
+      () => console.log(this.state.thp_tglpl),
     );
   };
 
@@ -307,6 +402,14 @@ class LogBook extends React.Component {
     }
   };
 
+  onSearchInputTypeChange = event => {
+    const value = event.target.value;
+
+    this.setState({
+      inputSearchType: value,
+    });
+  };
+
   onSearchInputTextChange = event => {
     const value = event.target.value;
 
@@ -323,12 +426,18 @@ class LogBook extends React.Component {
     if (code === 13) {
       event.preventDefault();
       //Function To Do
-      this.toggleSearchLogbookModal();
-      this.toggleSearchDOModal();
-      this.toggleSearchPLModal();
-      this.searchByLogbook();
-      this.searchByDO();
-      this.searchByPL();
+      if (this.state.inputSearchType === this.state.searchLogbook) {
+        this.toggleSearchLogbookModal();
+        this.searchByLogbook();
+      } else if (this.state.inputSearchType === this.state.searchDO) {
+        this.toggleSearchDOModal();
+        this.searchByDO();
+      } else if (this.state.inputSearchType === this.state.searchPL) {
+        this.toggleSearchPLModal();
+        this.searchByPL();
+      } else {
+        alert('Please select search type!');
+      }
     }
   };
 
@@ -364,6 +473,21 @@ class LogBook extends React.Component {
     this.setState({
       modalSearchPL: !this.state.modalSearchPL,
     });
+  };
+
+  validateSearch = () => {
+    let SearchError = '';
+
+    if (!this.state.inputSearch) {
+      SearchError = 'Search must be fill';
+    }
+
+    if (SearchError.length > 0) {
+      this.setState({ SearchError });
+
+      return false;
+    }
+    return true;
   };
 
   validateAdd = () => {
@@ -407,10 +531,37 @@ class LogBook extends React.Component {
     this.setState({ getTableData: deleteTable });
   };
 
-  searchByLogbook =  () => {
+  undoForm = () => {
+    this.setState({
+      dir_distributor: '',
+      dir_kddistributor: '',
+      dir_kode: '',
+      thp_tglpl: '',
+      inputNoPL: '',
+      inputSearchType: '',
+      inputSearch: '',
+    });
+  };
+
+  resetForm = () => {
+    this.setState({
+      getTableData: [],
+    });
+  };
+
+  searchByLogbook = () => {
     var url =
       'http://10.0.111.94:3254/getData?typeGet=GetByLogID&LogID=' +
       this.state.inputSearch;
+
+    const isValid = this.validateSearch();
+    if (!isValid) {
+      return;
+    }
+
+    console.log(this.state);
+
+    this.setState(initialState);
 
     Axios.get(url)
       .then(response => {
@@ -432,56 +583,45 @@ class LogBook extends React.Component {
       .catch(error => console.log('ERROR: ', error));
   };
 
-  searchByDO =  () => {
+  searchByDO = () => {
     var url =
       'http://10.0.111.94:3254/getData?typeGet=GetByDONum&Log_DONum=' +
       this.state.inputSearch;
 
     Axios.get(url)
       .then(response => {
+        console.log(JSON.stringify(response));
         if (response.data.data) {
-          var data = response.data.data;
-          var tempTableDO = [];
-          tempTableDO.push(data);
-
-          console.log(JSON.stringify(tempTableDO));
-
           this.setState(
             {
-              tableSearchDO: tempTableDO,
+              tableSearchDO: response.data.data,
             },
-            () => console.log(this.state.tempTableDO),
+            () => console.log(this.state.tableSearchDO),
           );
         }
       })
       .catch(error => console.log('ERROR: ', error));
   };
 
-  searchByPL =  () => {
+  searchByPL = () => {
     var url =
       'http://10.0.111.94:3254/getData?typeGet=GetByPLNum&Log_PLNum=' +
       this.state.inputSearch;
 
     Axios.get(url)
       .then(response => {
+        console.log(JSON.stringify(response));
         if (response.data.data) {
-          var data = response.data.data;
-          var tempTablePL = [];
-          tempTablePL.push(data);
-
-          console.log(JSON.stringify(tempTablePL));
-
           this.setState(
             {
-              tableSearchPL: tempTablePL,
+              tableSearchPL: response.data.data,
             },
-            () => console.log(this.state.tempTablePL),
+            () => console.log(this.state.tab),
           );
         }
       })
       .catch(error => console.log('ERROR: ', error));
   };
-
 
   //render biasa nya di-isi untuk desain HTML
 
@@ -519,10 +659,9 @@ class LogBook extends React.Component {
                         onInput={event => this.onDISTInputChange(event)}
                       >
                         <option value="">Select Your Option</option>
-                        {this.state.tablePL.map(tablePL => (
-                          <option value={tablePL.dir_distributor}>
-                            {tablePL.dir_distributor} -{' '}
-                            {tablePL.dir_kddistributor}
+                        {this.state.distTable.map(distTable => (
+                          <option value={distTable.dir_distributor}>
+                            {distTable}
                           </option>
                         ))}
                       </Input>
@@ -543,9 +682,9 @@ class LogBook extends React.Component {
                         <option value="">
                           Select Your Option For CAB DIST
                         </option>
-                        {this.state.tablePL.map(tablePL => (
-                          <option value={tablePL.dir_kode}>
-                            {tablePL.dir_kode} - {tablePL.dir_nama}
+                        {this.state.cabDistTable.map((cabDistTable, index) => (
+                          <option value={index}>
+                            {cabDistTable}
                           </option>
                         ))}
                       </Input>
@@ -586,7 +725,7 @@ class LogBook extends React.Component {
                     <td>
                       <Input
                         type="select"
-                        value={this.state.thp_nopl}
+                        value={this.state.thp_tglpl}
                         onInput={event => this.onDateInputChange(event)}
                       >
                         <option>Select Your Date</option>
@@ -614,11 +753,15 @@ class LogBook extends React.Component {
                       <Label className="ml-4">Search</Label>
                     </td>
                     <td>
-                      <Input type="select">
-                        <option>Search Here</option>
-                        <option>{this.state.inputNoLogbook}</option>
-                        <option>Nomor DO</option>
-                        <option>Nomor PL</option>
+                      <Input
+                        type="select"
+                        value={this.state.inputSearchType}
+                        onInput={event => this.onSearchInputTypeChange(event)}
+                      >
+                        <option>{this.state.searchHere}</option>
+                        <option>{this.state.searchLogbook}</option>
+                        <option>{this.state.searchDO}</option>
+                        <option>{this.state.searchPL}</option>
                       </Input>
                       <Input
                         className="mt-3"
@@ -626,6 +769,9 @@ class LogBook extends React.Component {
                         onInput={event => this.onSearchInputTextChange(event)}
                         onKeyPress={event => this.onSearchInputPressed(event)}
                       />
+                      <div style={{ color: 'red' }}>
+                        {this.state.SearchError}
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -704,7 +850,6 @@ class LogBook extends React.Component {
           </CardBody>
 
           <CardFooter className="d-flex justify-content-center">
-            <Button color="primary">Add</Button>
             <Button
               className="ml-5"
               color="primary"
@@ -718,8 +863,11 @@ class LogBook extends React.Component {
             <Button className="ml-5" color="secondary">
               Print Label
             </Button>
-            <Button className="ml-5" color="warning">
-              Cancel
+            <Button className="ml-5" color="warning" onClick={this.undoForm}>
+              Undo
+            </Button>
+            <Button className="ml-5" color="danger" onClick={this.resetForm}>
+              Reset
             </Button>
           </CardFooter>
         </Card>
@@ -911,7 +1059,15 @@ class LogBook extends React.Component {
                       <tr>
                         <td>{tableSearchDO.log_donum}</td>
                         <td>
-                          {tableSearchDO.log_date}
+                          {tableSearchDO.log_date.substr(8, 2) +
+                            '-' +
+                            MONTHS[
+                              new Date(
+                                tableSearchDO.log_date.substr(0, 10),
+                              ).getMonth()
+                            ] +
+                            '-' +
+                            tableSearchDO.log_date.substr(0, 4)}
                         </td>
                         <td>{tableSearchDO.log_cabams}</td>
                         <td>{tableSearchDO.scan_outberatcoli}</td>
@@ -954,7 +1110,15 @@ class LogBook extends React.Component {
                       <tr>
                         <td>{tableSearchPL.log_plnum}</td>
                         <td>
-                          {tableSearchPL.log_date}
+                          {tableSearchPL.log_date.substr(8, 2) +
+                            '-' +
+                            MONTHS[
+                              new Date(
+                                tableSearchPL.log_date.substr(0, 10),
+                              ).getMonth()
+                            ] +
+                            '-' +
+                            tableSearchPL.log_date.substr(0, 4)}
                         </td>
                         <td>{tableSearchPL.log_cabams}</td>
                         <td>{tableSearchPL.scan_outberatcoli}</td>
