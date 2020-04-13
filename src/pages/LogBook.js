@@ -48,8 +48,7 @@ const MONTHS = [
     SearchError: ''
   };
 
-  
-  const baseUrl = 'http://10.0.111.94:3254';
+  const baseUrl = 'http://10.0.111.94:3254/';
 
 
 class LogBook extends React.Component {
@@ -109,13 +108,18 @@ class LogBook extends React.Component {
       ScanAddError: '',
       SearchError: '',
 
-      initialState,
+      
 
+      initialState,
+ 
+      showSearch: false,
+      disabled: false,
       modalDetailPLIsOpen: false,
       modalBeratTimbang: false,
       modalSearchLogbook: false,
       modalSearchDO: false,
       modalSearchPL: false,
+      modalSave: false,
     };
   }
 
@@ -139,7 +143,7 @@ class LogBook extends React.Component {
   };
 
   pilihDist = async () => {
-    var url = 'http://10.0.111.94:3254/getData?typeGet=GetPLLB';
+    var url = baseUrl + 'getData?typeGet=GetPLLB';
     Axios.get(url).then(response => {
       if (response.data.data) {
         this.setState({
@@ -150,7 +154,7 @@ class LogBook extends React.Component {
   };
 
   pilihCMBDist = async () => {
-    var url = 'http://10.0.111.94:3254/getData?typeGet=GetPLLB';
+    var url = baseUrl + 'getData?typeGet=GetPLLB';
     Axios.get(url).then(response => {
       if (response.data.data) {
         this.setState({
@@ -161,7 +165,7 @@ class LogBook extends React.Component {
   };
 
   nomorPL = async () => {
-    var url = baseUrl + '/updateData?typePut=PutUpdateData';
+    var url = baseUrl + 'updateData?typePut=PutUpdateData';
     var body = this.state.getTableData;
 
     Axios.put(url, body).then(response => {
@@ -235,7 +239,7 @@ class LogBook extends React.Component {
   };
 
   insertLogbook = async payload => {
-    var url = 'http://10.0.111.94:3254/insertData?typePost=FirebaseLB';
+    var url = baseUrl + 'insertData?typePost=FirebaseLB';
     var body = payload;
 
     Axios.post(url, body).then(response => {
@@ -245,7 +249,7 @@ class LogBook extends React.Component {
 
   getTableData = async () => {
     var url =
-      'http://10.0.111.94:3254/getData?typeGet=GetByNoPL&NoPL=' +
+      baseUrl + 'getData?typeGet=GetByNoPL&NoPL=' +
       this.state.inputNoPL;
 
     const isValid = this.validateAdd();
@@ -274,7 +278,7 @@ class LogBook extends React.Component {
   };
 
   getDist = async () => {
-    var url = 'http://10.0.111.94:3254//getData?typeGet=GetDistSql';
+    var url = baseUrl + '/getData?typeGet=GetDistSql';
 
     Axios.get(url)
       .then(response => {
@@ -290,7 +294,7 @@ class LogBook extends React.Component {
 
   getCabDist = async dir_distributor => {
     var url =
-      'http://10.0.111.94:3254//getData?typeGet=GetCabDistributorSql&Dir_Distributor=' +
+      baseUrl + '/getData?typeGet=GetCabDistributorSql&Dir_Distributor=' +
       dir_distributor;
 
     Axios.get(url)
@@ -307,7 +311,7 @@ class LogBook extends React.Component {
 
   getTablePL = async dir_kode => {
     var url =
-      'http://10.0.111.94:3254/getData?typeGet=GetPLLB&dist=' +
+      baseUrl + 'getData?typeGet=GetPLLB&dist=' +
       dir_kode;
 
     Axios.get(url)
@@ -402,6 +406,24 @@ class LogBook extends React.Component {
     }
   };
 
+  onBeratRealEnterPressed = event => {
+    var code = event.keyCode || event.which;
+    if (code === 13) {
+      event.preventDefault();
+      // Function To Do
+      this.setState({
+        modalBeratTimbang: false
+      })
+      this.getTableData();
+    }
+  }
+
+  onCheckClick = () => {
+    this.setState({
+      showSearch: !this.state.showSearch
+    })
+  }
+
   onSearchInputTypeChange = event => {
     const value = event.target.value;
 
@@ -443,6 +465,7 @@ class LogBook extends React.Component {
 
   onSaveClick = () => {
     this.nomorPL();
+    this.toggleSaveModal();
   };
 
   toggleDetailPLModal = () => {
@@ -475,6 +498,12 @@ class LogBook extends React.Component {
     });
   };
 
+  toggleSaveModal = () => {
+    this.setState({
+      modalSave: !this.state.modalSave,
+    });
+  }
+
   validateSearch = () => {
     let SearchError = '';
 
@@ -483,7 +512,12 @@ class LogBook extends React.Component {
     }
 
     if (SearchError.length > 0) {
-      this.setState({ SearchError });
+      this.setState({ 
+        SearchError,
+        modalSearchLogbook: false,
+        modalSearchPL: false,
+        modalSearchDO: false,
+    });
 
       return false;
     }
@@ -551,7 +585,7 @@ class LogBook extends React.Component {
 
   searchByLogbook = () => {
     var url =
-      'http://10.0.111.94:3254/getData?typeGet=GetByLogID&LogID=' +
+      baseUrl +'getData?typeGet=GetByLogID&LogID=' +
       this.state.inputSearch;
 
     const isValid = this.validateSearch();
@@ -562,6 +596,7 @@ class LogBook extends React.Component {
     console.log(this.state);
 
     this.setState(initialState);
+
 
     Axios.get(url)
       .then(response => {
@@ -585,8 +620,17 @@ class LogBook extends React.Component {
 
   searchByDO = () => {
     var url =
-      'http://10.0.111.94:3254/getData?typeGet=GetByDONum&Log_DONum=' +
+      baseUrl + 'getData?typeGet=GetByDONum&Log_DONum=' +
       this.state.inputSearch;
+
+    const isValid = this.validateSearch();
+    if (!isValid) {
+      return;
+    }
+
+    console.log(this.state);
+
+    this.setState(initialState);
 
     Axios.get(url)
       .then(response => {
@@ -605,8 +649,17 @@ class LogBook extends React.Component {
 
   searchByPL = () => {
     var url =
-      'http://10.0.111.94:3254/getData?typeGet=GetByPLNum&Log_PLNum=' +
+      baseUrl + 'getData?typeGet=GetByPLNum&Log_PLNum=' +
       this.state.inputSearch;
+
+    const isValid = this.validateSearch();
+    if (!isValid) {
+      return;
+    }
+
+    console.log(this.state);
+
+    this.setState(initialState);
 
     Axios.get(url)
       .then(response => {
@@ -749,26 +802,34 @@ class LogBook extends React.Component {
 
                   <tr>
                     <td>
-                      <Input type="checkbox" className="ml-1" />
+                      <Input 
+                      type="checkbox" 
+                      className="ml-1" 
+                      onClick = { () => this.onCheckClick()}/>
                       <Label className="ml-4">Search</Label>
                     </td>
                     <td>
-                      <Input
-                        type="select"
-                        value={this.state.inputSearchType}
-                        onInput={event => this.onSearchInputTypeChange(event)}
-                      >
-                        <option>{this.state.searchHere}</option>
-                        <option>{this.state.searchLogbook}</option>
-                        <option>{this.state.searchDO}</option>
-                        <option>{this.state.searchPL}</option>
-                      </Input>
-                      <Input
-                        className="mt-3"
-                        value={this.state.inputSearch}
-                        onInput={event => this.onSearchInputTextChange(event)}
-                        onKeyPress={event => this.onSearchInputPressed(event)}
-                      />
+                      {this.state.showSearch?
+                       <div>
+                          <Input
+                       type="select"
+                       value={this.state.inputSearchType}
+                       onInput={event => this.onSearchInputTypeChange(event)}
+                     >
+                       <option>{this.state.searchHere}</option>
+                       <option>{this.state.searchLogbook}</option>
+                       <option>{this.state.searchDO}</option>
+                       <option>{this.state.searchPL}</option>
+                     </Input>
+                     <Input
+                       className="mt-3"
+                       value={this.state.inputSearch}
+                       onInput={event => this.onSearchInputTextChange(event)}
+                       onKeyPress={event => this.onSearchInputPressed(event)}
+                     />
+                       </div>
+                     :null
+                      }
                       <div style={{ color: 'red' }}>
                         {this.state.SearchError}
                       </div>
@@ -853,7 +914,7 @@ class LogBook extends React.Component {
             <Button
               className="ml-5"
               color="primary"
-              onClick={() => this.onSaveClick()}
+              onClick={() => this.toggleSaveModal()}
             >
               Save
             </Button>
@@ -967,6 +1028,7 @@ class LogBook extends React.Component {
                 placeholder="Berat Timbang"
                 value={this.state.beratrealpl}
                 onInput={event => this.onBeratRealPLInputTextChange(event)}
+                onKeyPress={event => this.onBeratRealEnterPressed(event)}
               ></Input>
               <Button
                 color="success"
@@ -1134,6 +1196,27 @@ class LogBook extends React.Component {
                 >
                   Close
                 </Button>
+              </ModalFooter>
+            </Form>
+          </ModalBody>
+        </Modal>
+                {/*Modal Save*/}
+                <Modal centered isOpen={this.state.modalSave} size="sm  ">
+          <ModalHeader>
+            <h3>Table Save</h3>
+          </ModalHeader>
+          <ModalBody className="m-3">
+            <Form>
+              <FormGroup>
+                <p>Are you sure you want to save the Data?</p>
+              </FormGroup>
+              <ModalFooter>
+                <Button 
+                color='primary'
+                onClick={() => this.onSaveClick()}>Save</Button>
+                <Button 
+                color='danger'
+                onClick={() => this.toggleSaveModal()}>Cancel</Button>
               </ModalFooter>
             </Form>
           </ModalBody>
