@@ -19,11 +19,14 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import { MdAdd, MdAssignment, MdLoyalty } from 'react-icons/md';
+import { MdAdd, MdAssignment, MdLoyalty, MdPrint, MdSave, MdUndo, MdDeleteForever } from 'react-icons/md';
 import NotificationSystem from 'react-notification-system';
 import { NOTIFICATION_SYSTEM_STYLE } from 'utils/constants';
+import PrintRegular from './PrintRegular';
+import PrintLabel from './PrintLabel';
 import User from './UserPage';
 import register from './../registerServiceWorker';
+import ReactToPrint from 'react-to-print';
 
 const MONTHS = [
   'Jan',
@@ -49,12 +52,38 @@ const MONTHS = [
   };
 
   const baseUrl = 'http://10.0.111.94:3254/';
+  
+  const numbers = [2, 10, 11, 5, 16]
+
+  var data = [{"name":"ramu","id":"719","gmail":"ramu@gmail.com","ph":988989898,"points":36},
+        {"name":"ravi","id":"445","gmail":"ravi@gmail.com","ph":4554545454,"points":122},
+        {"name":"karthik","id":"866","gmail":"karthik@gmail.com","ph":2332233232,"points":25}]   
+
+
+  const result = data.reduce(function(tot, arr) { 
+    // return the sum with previous value
+    return tot + arr.points;
+  
+    // set initial value as 0
+  },0);
+  
+  console.log("SUM", result);
+  
+  // const sum = numbers.reduce((acc, currValue) => {
+  //   return acc + currValue;
+  // }, 0);
+
+  // console.log("SUM", sum)
+
+
+
 
 
 class LogBook extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isLoading: false,
       distUsers: [],
       cabUsers: [],
       koliOpt: [],
@@ -107,10 +136,9 @@ class LogBook extends React.Component {
       CABDistAddError: '',
       ScanAddError: '',
       SearchError: '',
-
       
-
       initialState,
+      result: '',
  
       showSearch: false,
       disabled: false,
@@ -120,6 +148,8 @@ class LogBook extends React.Component {
       modalSearchDO: false,
       modalSearchPL: false,
       modalSave: false,
+
+      thp_nopl: ''
     };
   }
 
@@ -676,6 +706,7 @@ class LogBook extends React.Component {
       .catch(error => console.log('ERROR: ', error));
   };
 
+
   //render biasa nya di-isi untuk desain HTML
 
   render() {
@@ -860,7 +891,7 @@ class LogBook extends React.Component {
                       //   getTableData.dir_kode.includes(this.state.filterCabDist) &&
                       //   getTableData.thp_nopl.includes(this.state.filterNoPL) &&
                       <tr>
-                        <td>{getTableData.thp_nopl}</td>
+                        <td value={this.state.thp_nopl}>{getTableData.thp_nopl}</td>
                         <td>
                           {getTableData.thp_tglpl.substr(8, 2) +
                             '-' +
@@ -916,21 +947,36 @@ class LogBook extends React.Component {
               color="primary"
               onClick={() => this.toggleSaveModal()}
             >
-              Save
+             <MdSave/> Save
             </Button>
-            <Button className="ml-5" color="secondary">
-              Print
-            </Button>
-            <Button className="ml-5" color="secondary">
-              Print Label
-            </Button>
+            
+            <ReactToPrint
+              trigger={() => <Button className="ml-5" color="secondary" disabled={this.state.isLoading}><MdPrint/> Print</Button>}
+              content={() => this.PrintRegular}
+              onBeforeGetContent= {() => this.setState({isLoading: true})}
+              onAfterPrint={() => this.setState({isLoading: false})}
+              />
+            
+            <ReactToPrint
+              trigger={() => <Button className= "ml-5" color="secondary" disabled={this.state.isLoading}><MdPrint/> Print Label</Button>}
+              content={() => this.PrintLabelPlastic}
+              onBeforeGetContent= {() => this.setState({isLoading: true})}
+              onAfterPrint={() => this.setState({isLoading: false})}
+            />
             <Button className="ml-5" color="warning" onClick={this.undoForm}>
-              Undo
+             <MdUndo/> Undo
             </Button>
             <Button className="ml-5" color="danger" onClick={this.resetForm}>
-              Reset
+             <MdDeleteForever/> Reset
             </Button>
           </CardFooter>
+
+           <PrintRegular
+            ref= {el => this.PrintRegular = el}/> 
+          
+          <PrintLabel
+            ref= {el => this.PrintLabel = el}/>
+
         </Card>
         {/*Modal Detail PL*/}
         <Modal centered isOpen={this.state.modalDetailPLIsOpen} size="lg  ">
