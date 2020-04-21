@@ -77,7 +77,8 @@ const TablePage = React.lazy(() => import('pages/template/TablePage'));
 const TypographyPage = React.lazy(() => import('pages/template/TypographyPage'));
 const WidgetPage = React.lazy(() => import('pages/template/WidgetPage'));
 
-const LogBookPage = React.lazy(() => import('pages/LogBook.js'))
+const SpdoPage = React.lazy(() => import('pages/Spdo.js'));
+const LogBookPage = React.lazy(() => import('pages/LogBook.js'));
 const ReminderPage = React.lazy(() => import('pages/ReminderPage.js'));
 const NewPage = React.lazy(() => import('pages/NewPage.js'));
 const EmptyPage = React.lazy(() => import('pages/EmptyPage'));
@@ -215,6 +216,7 @@ class App extends React.Component {
                 <Route exact path="/input-groups" component={InputGroupPage} />
                 <Route exact path="/charts" component={ChartPage} />
 
+                <Route exact path="/spdo" component={SpdoPage}/>
                 <Route exact path="/logbook" component={LogBookPage} />
                 <Route exact path="/batch" component={MonitoringBatchPage} />
                 <Route exact path="/reminder" component={ReminderPage} />

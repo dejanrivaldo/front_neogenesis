@@ -28,6 +28,13 @@ import User from './UserPage';
 import register from './../registerServiceWorker';
 import ReactToPrint from 'react-to-print';
 
+//  var getTableData = [
+//     { thp_nopl: 98100000012 , thp_tglpl: new Date(), tdpd_nodo: 110, dir_kode: 100, thp_tujuanid: 121213, thp_pemesanid: 2131, thp_distname: "AMS", thp_berattotalreal: 10 },
+//     { thp_nopl: 98100000013 , thp_tglpl: new Date(), tdpd_nodo: 110, dir_kode: 100, thp_tujuanid: 121213, thp_pemesanid: 2131, thp_distname: "AMS", thp_berattotalreal: 20 },
+//     { thp_nopl: 98100000014 , thp_tglpl: new Date(), tdpd_nodo: 110, dir_kode: 100, thp_tujuanid: 121213, thp_pemesanid: 2131, thp_distname: "AMS", thp_berattotalreal: 30 },
+//     { thp_nopl: 98100000015 , thp_tglpl: new Date(), tdpd_nodo: 110, dir_kode: 100, thp_tujuanid: 121213, thp_pemesanid: 2131, thp_distname: "AMS", thp_berattotalreal: 40 },
+//   ];
+
 const MONTHS = [
   'Jan',
   'Feb',
@@ -53,32 +60,6 @@ const MONTHS = [
 
   const baseUrl = 'http://10.0.111.94:3254/';
   
-  const numbers = [2, 10, 11, 5, 16]
-
-  var data = [{"name":"ramu","id":"719","gmail":"ramu@gmail.com","ph":988989898,"points":36},
-        {"name":"ravi","id":"445","gmail":"ravi@gmail.com","ph":4554545454,"points":122},
-        {"name":"karthik","id":"866","gmail":"karthik@gmail.com","ph":2332233232,"points":25}]   
-
-
-  const result = data.reduce(function(tot, arr) { 
-    // return the sum with previous value
-    return tot + arr.points;
-  
-    // set initial value as 0
-  },0);
-  
-  console.log("SUM", result);
-  
-  // const sum = numbers.reduce((acc, currValue) => {
-  //   return acc + currValue;
-  // }, 0);
-
-  // console.log("SUM", sum)
-
-
-
-
-
 class LogBook extends React.Component {
   constructor(props) {
     super(props);
@@ -102,6 +83,7 @@ class LogBook extends React.Component {
       dir_distributor: '',
       dir_kddistributor: '',
 
+      thp_nopl: '',
       dir_kode: '',
       thp_tglpl: '',
 
@@ -148,8 +130,6 @@ class LogBook extends React.Component {
       modalSearchDO: false,
       modalSearchPL: false,
       modalSave: false,
-
-      thp_nopl: ''
     };
   }
 
@@ -304,6 +284,11 @@ class LogBook extends React.Component {
           });
         }
       })
+      .then(data => {
+        this.setState({
+          thp_nopl: data['thp_nopl']
+        })
+      }) 
       .catch(error => console.log('ERROR: ', error));
   };
 
@@ -891,9 +876,9 @@ class LogBook extends React.Component {
                       //   getTableData.dir_kode.includes(this.state.filterCabDist) &&
                       //   getTableData.thp_nopl.includes(this.state.filterNoPL) &&
                       <tr>
-                        <td value={this.state.thp_nopl}>{getTableData.thp_nopl}</td>
+                        <td>{getTableData.thp_nopl}</td>
                         <td>
-                          {getTableData.thp_tglpl.substr(8, 2) +
+                          {/* {getTableData.thp_tglpl.substr(8, 2) +
                             '-' +
                             MONTHS[
                               new Date(
@@ -901,7 +886,7 @@ class LogBook extends React.Component {
                               ).getMonth()
                             ] +
                             '-' +
-                            getTableData.thp_tglpl.substr(0, 4)}
+                            getTableData.thp_tglpl.substr(0, 4)} */}
                         </td>
                         <td>{getTableData.tdpd_nodo}</td>
                         <td>{getTableData.dir_kode}</td>
@@ -959,7 +944,7 @@ class LogBook extends React.Component {
             
             <ReactToPrint
               trigger={() => <Button className= "ml-5" color="secondary" disabled={this.state.isLoading}><MdPrint/> Print Label</Button>}
-              content={() => this.PrintLabelPlastic}
+              content={() => this.PrintLabel}
               onBeforeGetContent= {() => this.setState({isLoading: true})}
               onAfterPrint={() => this.setState({isLoading: false})}
             />
@@ -1271,5 +1256,6 @@ class LogBook extends React.Component {
     );
   }
 }
+
 
 export default LogBook;

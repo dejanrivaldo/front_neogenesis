@@ -14,62 +14,136 @@ import {
 } from 'reactstrap';
 
 const fontStyle = { 'font-family': 'Courier New' }
+const textStyle = {margin: '30px' }
+const widthStyle = {margin: "10px"}
 
-class PrintLabelPlastic extends React.Component {
+class PrintLabel extends React.Component {
 
 	render() {
 		return (
 			<Card className="m-1 p-4">
 				<CardHeader>
-					<Row>
-						<Col>
-							<Label className='mr-3 font-weight-bold'><span style={fontStyle}><span className='mr-3'>KODE APOTEK AMS</span>:</span></Label>
-							<Label><span style={fontStyle}>{this.props.KodeOutAMS}</span></Label>
-						</Col>
+					<Row className='mb-2 d-flex justify-content-center'>
+							<Label className='mr-3 font-weight-bold'><span style={fontStyle}>Log Book</span></Label>
+							<Label><span style={fontStyle}>{this.props.dir_kode}</span></Label>
 					</Row>
 				</CardHeader>
 				<CardBody>
-					<Row className='mb-2 d-flex justify-content-center'>
-						<Barcode format='CODE39' height={50} displayValue={false} value={this.props.KodeOutAMS} />
-					</Row>
-					<Row className='mb-4 d-flex justify-content-center'>
-						<Label className='font-weight-bold'><span style={fontStyle}>{this.props.NamaOut}</span></Label>
-					</Row>
 					<Row>
 						<Col>
-							<Label className="w-25 font-weight-bold"><span style={fontStyle}>CABANG AMS</span></Label>
-							<Label><span style={fontStyle}><span className='mr-3 font-weight-bold'> : </span>{this.props.NamaCabsAMS}</span></Label>
+							<Label className='font-weight-bold'><span style={fontStyle}>LogID</span></Label>
+							<Label><span style={fontStyle}><span className='font-weight-bold'>:</span>{this.props.thp_logID}</span></Label>
+							<Label className='d-flex justify-content-end'><span style={fontStyle}>Date</span></Label>
 						</Col>
 					</Row>
 
-					<Row>
-						<Col>
-							<Label className="w-25 font-weight-bold"><span style={fontStyle}>ALAMAT AMS</span></Label>
-							<Label><span style={fontStyle}><span className='mr-3 font-weight-bold'> : </span>{this.props.AlamatCabAMS}</span></Label>
-						</Col>
-					</Row>
-				</CardBody>
+					<Table className='mr-3 font-weight-bold' style={fontStyle}>
+						<thead>
+							<tr>
+								<th>No.</th>
+								<th>Nomor DO</th>
+								<th>Nomor PL</th>
+								<th>Penerima</th>
+								<th>No Koli</th>
+									
+										<th>Tujuan</th>
+										<th>Berat</th>
+								
+						
+								<th>Jenis Koli</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>1</td>
+								<td>{this.props.thp_nodo}</td>
+								<td>{this.props.thp_nopl}</td>
+								<td>{this.props.thp_distname}</td>
+								<td>No Koli</td>
+								<td>Pekanbaru (AMS)</td>
+								<td>1230</td>
+								<td>Jenis Koli</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td>Total Berat</td>
+								<td>1230</td>
+								<td></td>
+							</tr>	
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td>Total Procod</td>
+								<td>1</td>
+								<td></td>
+							</tr>	
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td>Total PL</td>
+								<td>1</td>
+								<td></td>
+							</tr>	
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td>Total Koli</td>
+								<td>1</td>
+								<td></td>
+							</tr>	
+						</tbody>
+					</Table>
 
-				<CardBody>
-					<Row>
-						<Col>
-							<Label className="w-25 font-weight-bold"><span style={fontStyle}>NOMOR PL</span></Label>
-							<Label><span style={fontStyle}><span className='mr-3 font-weight-bold'> : </span>{this.props.NOPL}</span></Label>
-						</Col>
+					<Row className='d-flex justify-content-center'>
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>(</span></Label>
+							<Label style={textStyle} className='mt-10 font-weight-bold'><span style={fontStyle}>PEMBUAT</span></Label>
+							<Label style={widthStyle}><span style={fontStyle}><span className='mr-3 font-weight-bold'>)</span></span></Label>
+	
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>(</span></Label>
+							<Label style={textStyle} className='mt-10 font-weight-bold'><span style={fontStyle}>PENJALURAN</span></Label>
+							<Label style={widthStyle}><span style={fontStyle}><span className='mr-3 font-weight-bold'>)</span></span></Label>
+
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>(</span></Label>
+							<Label style={textStyle} className='mt-10 font-weight-bold'><span style={fontStyle}>EKSPEDISI</span></Label>
+							<Label style={widthStyle}><span style={fontStyle}><span className='mr-3 font-weight-bold'>)</span></span></Label>
+
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>(</span></Label>
+							<Label style={textStyle} className='mt-10 font-weight-bold'><span style={fontStyle}>IC</span></Label>
+							<Label style={widthStyle}><span style={fontStyle}><span className='mr-3 font-weight-bold'>)</span></span></Label>
+
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>(</span></Label>
+							<Label style={textStyle} className='mt-10 font-weight-bold'><span style={fontStyle}>SECURITY</span></Label>
+							<Label style={widthStyle}><span style={fontStyle}><span className='mr-3 font-weight-bold'>)</span></span></Label>
 					</Row>
-					{
-						false &&
-						<Row>
-							<Col>
-								<Label className="w-25 font-weight-bold"><span style={fontStyle}>CONTAINER</span></Label>
-								<Label><span style={fontStyle}><span className='mr-3 font-weight-bold'> : </span>1/10</span></Label>
-							</Col>
-						</Row>
-					}
+{/* 
+					<Row className='d-flex justify-content-center'>
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>PEMBUAT</span></Label>
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>PENJALURAN</span></Label>
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>EKSPEDISI</span></Label>
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>IC</span></Label>
+							<Label style={widthStyle} className='font-weight-bold'><span style={fontStyle}>SECURITY</span></Label>
+					</Row> */}
+							
+		
+				
+
 				</CardBody>
 			</Card>
 		);
 	}
 }
 
-export default PrintLabelPlastic;
+export default PrintLabel;

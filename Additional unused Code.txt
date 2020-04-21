@@ -1,0 +1,24 @@
+  // const numbers = [2, 10, 11, 5, 16]
+
+  // var data = [{"name":"ramu","id":"719","gmail":"ramu@gmail.com","ph":988989898,"points":36},
+  //       {"name":"ravi","id":"445","gmail":"ravi@gmail.com","ph":4554545454,"points":122},
+  //       {"name":"karthik","id":"866","gmail":"karthik@gmail.com","ph":2332233232,"points":25}]   
+
+
+  // const result = data.reduce(function(tot, arr) { 
+  //   return the sum with previous value
+  //   return tot + arr.points;
+  
+  //   set initial value as 0
+  // },0);
+  
+  // console.log("SUM", result);
+  
+  // const sum = numbers.reduce((acc, currValue) => {
+  //   return acc + currValue;
+  // }, 0);
+
+  // console.log("SUM", sum)
+
+
+
